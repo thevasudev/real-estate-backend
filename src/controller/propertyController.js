@@ -1,21 +1,23 @@
+// controllers/propertyController.js
 const Property = require('../model/propertyModel');
+const { normalizeFeaturesToString } = require('../model/propertyModel');
 
 // Utility: simple https URL check
 const isHttpUrl = (s) => typeof s === 'string' && /^https?:\/\//i.test(s);
 
+// CREATE
 exports.createProperty = async (req, res, next) => {
   try {
     const {
-      images = [],           // array of Firebase download URLs from frontend
+      images = [],
       type,
       title,
       location,
       price,
-      features,
+      features, // may be string or array; we'll normalize to string
       status
     } = req.body;
 
-    // Validate
     if (!Array.isArray(images)) {
       return res.status(400).json({ error: 'images must be an array of URLs' });
     }
@@ -30,7 +32,7 @@ exports.createProperty = async (req, res, next) => {
       title,
       location,
       price,
-      features,
+      features: normalizeFeaturesToString(features),
       status
     });
 
@@ -40,6 +42,7 @@ exports.createProperty = async (req, res, next) => {
   }
 };
 
+// LIST
 exports.getProperties = async (req, res, next) => {
   try {
     const props = await Property.find().sort({ createdAt: -1 }).lean();
@@ -49,6 +52,7 @@ exports.getProperties = async (req, res, next) => {
   }
 };
 
+// GET BY ID
 exports.getPropertyById = async (req, res, next) => {
   try {
     const prop = await Property.findById(req.params.id);
@@ -59,21 +63,27 @@ exports.getPropertyById = async (req, res, next) => {
   }
 };
 
+// UPDATE
 exports.updateProperty = async (req, res, next) => {
   try {
     const { id } = req.params;
-    // Optional: validate images if provided
-    if (req.body.images) {
-      if (!Array.isArray(req.body.images)) {
+
+    const payload = { ...req.body };
+    if (payload.features !== undefined) {
+      payload.features = normalizeFeaturesToString(payload.features);
+    }
+
+    if (payload.images) {
+      if (!Array.isArray(payload.images)) {
         return res.status(400).json({ error: 'images must be an array of URLs' });
       }
-      const bad = req.body.images.find(u => !isHttpUrl(u));
+      const bad = payload.images.find(u => !isHttpUrl(u));
       if (bad) return res.status(400).json({ error: `Invalid image URL: ${bad}` });
     }
 
     const updated = await Property.findByIdAndUpdate(
       id,
-      { $set: req.body },
+      { $set: payload },
       { new: true, runValidators: true }
     );
     if (!updated) return res.status(404).json({ error: 'Property not found' });
@@ -83,6 +93,7 @@ exports.updateProperty = async (req, res, next) => {
   }
 };
 
+// DELETE
 exports.deleteProperty = async (req, res, next) => {
   try {
     const { id } = req.params;

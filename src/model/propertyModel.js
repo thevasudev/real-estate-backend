@@ -1,3 +1,4 @@
+// models/propertyModel.js
 const mongoose = require('mongoose');
 
 const ALLOWED_TYPES = [
@@ -14,6 +15,14 @@ const ALLOWED_TYPES = [
 ];
 
 const STATUS = ['completed', 'ongoing', 'upcoming'];
+
+// If an array accidentally arrives, stringify it into a paragraph-like string.
+function normalizeFeaturesToString(input) {
+  if (Array.isArray(input)) {
+    return input.map(s => (s == null ? '' : String(s).trim())).filter(Boolean).join(' ');
+  }
+  return input == null ? '' : String(input).trim();
+}
 
 const PropertySchema = new mongoose.Schema(
   {
@@ -49,9 +58,12 @@ const PropertySchema = new mongoose.Schema(
       required: true,
       min: 0
     },
+    // ✅ single descriptive string
     features: {
       type: String,
-      default: []
+      default: '',
+      trim: true,
+      set: normalizeFeaturesToString
     },
     status: {
       type: String,
@@ -66,3 +78,4 @@ const PropertySchema = new mongoose.Schema(
 module.exports = mongoose.model('Property', PropertySchema);
 module.exports.ALLOWED_TYPES = ALLOWED_TYPES;
 module.exports.STATUS = STATUS;
+module.exports.normalizeFeaturesToString = normalizeFeaturesToString;
