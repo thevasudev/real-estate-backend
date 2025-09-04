@@ -50,7 +50,7 @@ const PropertySchema = new mongoose.Schema(
       min: 0
     },
     features: {
-      type: [String],
+      type: String,
       default: []
     },
     status: {

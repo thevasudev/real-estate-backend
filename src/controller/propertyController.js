@@ -11,7 +11,7 @@ exports.createProperty = async (req, res, next) => {
       title,
       location,
       price,
-      features = [],
+      features,
       status
     } = req.body;
 
