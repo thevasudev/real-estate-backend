@@ -23,6 +23,18 @@ function normalizeFeaturesToString(input) {
   }
   return input == null ? '' : String(input).trim();
 }
+function normalizeAmenitiesToArray(input) {
+  if (input == null) return [];
+  if (Array.isArray(input)) {
+    return [...new Set(input.map(x => String(x).trim()).filter(Boolean))];
+  }
+  // accept CSV / semicolon / pipe / newline strings
+  const tokens = String(input)
+    .split(/[,\n;|]/)
+    .map(s => s.trim())
+    .filter(Boolean);
+  return [...new Set(tokens)];
+}
 
 const PropertySchema = new mongoose.Schema(
   {
@@ -64,6 +76,15 @@ const PropertySchema = new mongoose.Schema(
       default: '',
       trim: true,
       set: normalizeFeaturesToString
+    },
+    amenities: {
+      type: [String],
+      default: [],
+      set: normalizeAmenitiesToArray,
+      validate: {
+        validator: (arr) => Array.isArray(arr),
+        message: 'amenities must be an array of strings'
+      }
     },
     status: {
       type: String,

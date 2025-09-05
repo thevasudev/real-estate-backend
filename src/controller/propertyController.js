@@ -1,6 +1,8 @@
 // controllers/propertyController.js
 const Property = require('../model/propertyModel');
-const { normalizeFeaturesToString } = require('../model/propertyModel');
+// const { normalizeFeaturesToString } = require('../model/propertyModel');
+
+const { normalizeFeaturesToString, normalizeAmenitiesToArray } = require('../model/propertyModel');
 
 // Utility: simple https URL check
 const isHttpUrl = (s) => typeof s === 'string' && /^https?:\/\//i.test(s);
@@ -14,17 +16,16 @@ exports.createProperty = async (req, res, next) => {
       title,
       location,
       price,
-      features, // may be string or array; we'll normalize to string
-      status
+      features,
+      amenities, // <— new
+      status,
     } = req.body;
 
     if (!Array.isArray(images)) {
       return res.status(400).json({ error: 'images must be an array of URLs' });
     }
     const bad = images.find(u => !isHttpUrl(u));
-    if (bad) {
-      return res.status(400).json({ error: `Invalid image URL: ${bad}` });
-    }
+    if (bad) return res.status(400).json({ error: `Invalid image URL: ${bad}` });
 
     const doc = await Property.create({
       images,
@@ -33,6 +34,7 @@ exports.createProperty = async (req, res, next) => {
       location,
       price,
       features: normalizeFeaturesToString(features),
+      amenities: normalizeAmenitiesToArray(amenities), // <—
       status
     });
 
@@ -67,12 +69,14 @@ exports.getPropertyById = async (req, res, next) => {
 exports.updateProperty = async (req, res, next) => {
   try {
     const { id } = req.params;
-
     const payload = { ...req.body };
+
     if (payload.features !== undefined) {
       payload.features = normalizeFeaturesToString(payload.features);
     }
-
+    if (payload.amenities !== undefined) {
+      payload.amenities = normalizeAmenitiesToArray(payload.amenities); // <—
+    }
     if (payload.images) {
       if (!Array.isArray(payload.images)) {
         return res.status(400).json({ error: 'images must be an array of URLs' });
