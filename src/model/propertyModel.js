@@ -100,3 +100,4 @@ module.exports = mongoose.model('Property', PropertySchema);
 module.exports.ALLOWED_TYPES = ALLOWED_TYPES;
 module.exports.STATUS = STATUS;
 module.exports.normalizeFeaturesToString = normalizeFeaturesToString;
+module.exports.normalizeAmenitiesToArray = normalizeAmenitiesToArray;
