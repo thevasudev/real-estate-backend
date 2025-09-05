@@ -24,6 +24,7 @@ const adminRoutes = require('./src/routes/adminRoutes');
 const staticRoutes = require('./src/routes/staticRoutes');
 const contactRoutes = require('./src/routes/contactRoutes');
 const propertyRoutes = require('./src/routes/propertyRoutes');
+const teamRoutes = require('./src/routes/teamRoutes');
 
 app.use('/api/admin', adminRoutes);
 app.use('/api/faq', faqRoutes);
@@ -31,6 +32,7 @@ app.use('/api/static', staticRoutes);
 app.use('/api/contact', contactRoutes);
 // NOTE: you used /api/property (singular). Keep it consistent with your Postman tests.
 app.use('/api/property', propertyRoutes);
+app.use('/api/team', teamRoutes);
 
 // 404 + error handlers
 app.use((req, res) => res.status(404).json({ error: 'Not found' }));
